@@ -1,0 +1,14 @@
+# Homebrew Backup Configuration
+# Copy this file to 'config' and customize the values below
+
+# Directory where the backup will be stored (default: current directory)
+export BACKUP_DIR="/Users/$(whoami)/brew-backup"
+
+# Git repository URL for pushing backups (optional)
+export GIT_REPO_URL="https://github.com/yourusername/your-brew-backup-repo.git"
+
+# Name of the Brewfile to generate (default: Brewfile)
+export BREWFILE_NAME="Brewfile"
+
+# Commit message for backup commits
+export COMMIT_MESSAGE="Update Homebrew bundle backup"
