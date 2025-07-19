@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
@@ -7,6 +8,9 @@ source "${script_dirpath}/shared-consts.env"
 EXAMPLE_CONFIG_FILEPATH="${script_dirpath}/safebrew.env.example"
 
 BACKUP_SCRIPT_FILENAME="safebrew.sh"
+
+STDOUT_LOG_FILEPATH="/tmp/${BACKUP_SCRIPT_FILENAME}.out"
+STDERR_LOG_FILEPATH="/tmp/${BACKUP_SCRIPT_FILENAME}.err"
 
 # Sanity checks
 backup_script_filepath="${script_dirpath}/${BACKUP_SCRIPT_FILENAME}"
@@ -79,7 +83,7 @@ if ! [ -f "${CONFIG_FILEPATH}" ]; then
 fi
 
 # Create a plist file that runs our script
-plist_contents=$(cat << EOF
+plist_contents="$(cat << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -95,16 +99,16 @@ plist_contents=$(cat << EOF
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
-        <integer>12</integer>
+        <integer>23</integer>
         <key>Minute</key>
-        <integer>0</integer>
+        <integer>47</integer>
     </dict>
     
     <key>StandardOutPath</key>
-    <string>/tmp/${BACKUP_SCRIPT_FILENAME}.out</string>
+    <string>${STDOUT_LOG_FILEPATH}</string>
     
     <key>StandardErrorPath</key>
-    <string>/tmp/${BACKUP_SCRIPT_FILENAME}.err</string>
+    <string>${STDERR_LOG_FILEPATH}</string>
     
     <key>RunAtLoad</key>
     <false/>
@@ -114,6 +118,7 @@ plist_contents=$(cat << EOF
 </dict>
 </plist>
 EOF
+)"
 
 # Unload existing service if it's running (idempotent)
 if launchctl list | grep -q "${PLIST_LABEL}"; then
@@ -129,6 +134,8 @@ launchctl load "${PLIST_FILEPATH}"
 echo "✅ Installation completed successfully"
 echo ""
 echo "The backup will run daily at 12:00 PM"
+echo "STDOUT logs can be found at ${STDOUT_LOG_FILEPATH}"
+echo "STDERR logs can be found at ${STDERR_LOG_FILEPATH}"
 echo "You can manually run the backup with: ${backup_script_filepath}"
 echo ""
 echo "💡 To uninstall, run: ${script_dirpath}"

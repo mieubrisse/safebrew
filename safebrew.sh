@@ -3,6 +3,7 @@
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
+osascript -e 'display notification "Hello world" with title "test 1" subtitle "sub 1"'
 echo "I am safebrew!"
 exit 0
 

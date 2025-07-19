@@ -8,8 +8,11 @@ Automated brew backup is in a curious state. Everybody has the problem - I found
 
 But there were enough fiddly bits I had to figure out that I figured I'd publish my solution, so folks don't have to keep reinventing the wheel.
 
+
 Quick Start
 -----------
+
+TODO because it gets sourced, you can use Bash-isms
 
 1. Clone this repository:
    ```bash
