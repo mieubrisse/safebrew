@@ -75,6 +75,7 @@ fill_config_file() {
 
     cp "${temp_filepath}" "${CONFIG_FILEPATH}"
     echo "✅ Wrote config: ${CONFIG_FILEPATH}"
+    echo ""
 }
 
 # The user doesn't have a config file; we need to create it for them
@@ -99,9 +100,9 @@ plist_contents="$(cat << EOF
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
-        <integer>23</integer>
+        <integer>12</integer>
         <key>Minute</key>
-        <integer>47</integer>
+        <integer>0</integer>
     </dict>
     
     <key>StandardOutPath</key>
