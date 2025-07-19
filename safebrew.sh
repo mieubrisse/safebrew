@@ -40,14 +40,20 @@ if ! git remote get-url origin ; then
     exit 1
 fi
 
+git fetch
+
+git reset --hard origin/HEAD
+
 echo "Dumping brew..."
-brew bundle dump --file Brewfile
+brew bundle dump -f --file Brewfile
 
 echo "Adding Brewfile..."
 git add Brewfile
 
+# We commit regardless so that automation which checks freshness of the rpeo can 
+# be sure the pipeline is still running
 echo "Committing..."
-git commit -m "Automated backup: $(date)"
+git commit --allow-empty -m "Automated backup: $(date)"
 
 echo "Pushing..."
 git push
