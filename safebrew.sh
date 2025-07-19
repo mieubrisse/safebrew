@@ -34,28 +34,37 @@ if ! [ -d "${GIT_REPO_DIRPATH}/.git" ]; then
     exit 1
 fi
 
+if [ -z "${GIT_BINPATH}" ]; then
+    echo "Error: GIT_BINPATH must be set" >&2
+    exit 1
+fi
+if [ -z "${BREW_BINPATH}" ]; then
+    echo "Error: BREW_BINPATH must be set" >&2
+    exit 1
+fi
+
 cd "${GIT_REPO_DIRPATH}"
 if ! git remote get-url origin ; then
     echo "Error: Repository '${GIT_REPO_DIRPATH}' doesn't have an origin" >&2
     exit 1
 fi
 
-git fetch
+"${GIT_BINPATH}" fetch
 
-git reset --hard origin/HEAD
+"${GIT_BINPATH}" reset --hard origin/HEAD
 
 echo "Dumping brew..."
-brew bundle dump -f --file Brewfile
+"${BREW_BINPATH}" bundle dump -f --file Brewfile
 
 echo "Adding Brewfile..."
-git add Brewfile
+"${GIT_BINPATH}" add Brewfile
 
 # We commit regardless so that automation which checks freshness of the rpeo can 
 # be sure the pipeline is still running
 echo "Committing..."
-git commit --allow-empty -m "Automated backup: $(date)"
+"${GIT_BINPATH}" commit --allow-empty -m "Automated backup: $(date)"
 
 echo "Pushing..."
-git push
+"${GIT_BINPATH}" push
 
 echo "✅ Backup complete"
