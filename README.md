@@ -1,74 +1,37 @@
 safebrew
 ========
-A tiny automation system for regularly doing `brew bundle dump` and pushing it to a Git repo.
+A tiny automation system for regularly doing `brew bundle dump` to a Git repo, and `git push`ing it.
 
 Why this repo?
 
-Automated brew backup is in a curious state. Everybody has the problem - I found multiple blog posts and a couple personal repos - but nobody has an off-the-shelf solution for doing it. Maybe it's considered too small to be worth the time?
+Automated Homebrew backup is in an odd state. Everybody has the problem - I found multiple blog posts and several personal repos - but all the solutions are bespoke. Nobody seems to provide an off-the-shelf solution for doing it.
 
-But there were enough fiddly bits I had to figure out that I figured I'd publish my solution, so folks don't have to keep reinventing the wheel.
+Maybe it's considered too small to be worth the time?
 
+But I figured there was enough complexity to build something generally usable, so here it is.
 
-Quick Start
------------
-
-TODO because it gets sourced, you can use Bash-isms
-
-1. Clone this repository:
-   ```bash
-   git clone <your-repo-url>
-   cd brew-backup
-   ```
-
-2. (Optional) Configure your settings:
-   ```bash
-   cp config.example config
-   # Edit config with your preferences
-   ```
-
-3. Install the automated backup:
-   ```bash
-   ./install.sh
-   ```
-
-Configuration
--------------
-
-Copy `config.example` to `config` and customize:
-
-- `BACKUP_DIR`: Directory where backups are stored (default: current directory)
-- `GIT_REPO_URL`: Git repository URL for pushing backups (optional)
-- `BREWFILE_NAME`: Name of the generated Brewfile (default: "Brewfile")
-- `COMMIT_MESSAGE`: Commit message for backup commits
-
-Manual Usage
+Installation
 ------------
+1. Clone this repo somewhere:
+   ```
+   git clone git@github.com:mieubrisse/safebrew.git
+   ```
+1. Run the installation:
+   ```
+   bash install.sh
+   ```
+1. Follow the prompts to fill in the config values. You can use `$HOME`.
 
-Run a backup manually:
-```bash
-./backup-brew.sh
-```
+Usage
+-----
+A backup will be taken every day at noon.
 
-Scheduled Backups
------------------
+You can run the backup manually with `safebrew.sh`.
 
-The install script sets up a LaunchAgent that runs daily at 12:00 PM. Logs are written to:
-- `/tmp/brew-backup.log` (standard output)
-- `/tmp/brew-backup.error.log` (error output)
+Automated backup logs get written to `/tmp/safebrew.sh.out` and `/tmp/safebrew.sh.err`.
+
+💡 You might want to set up alerting to ensure the backups are still running (e.g. in n8n).
 
 Uninstall
 ---------
-
-To remove the automated backup:
-```bash
-launchctl unload ~/Library/LaunchAgents/BackupHomebrew.plist
-rm ~/Library/LaunchAgents/BackupHomebrew.plist
-```
-
-Files
------
-
-- `backup-brew.sh`: Main backup script
-- `install.sh`: Installation script for setting up automation
-- `com.user.brewbackup.plist`: LaunchAgent configuration
-- `config.example`: Configuration template
+Run the `uninstall.sh` script.
