@@ -2,41 +2,94 @@
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+source "${script_dirpath}/shared-consts.env"
 
-log() {
-    echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} $1"
+EXAMPLE_CONFIG_FILEPATH="${script_dirpath}/safebrew.env.example"
+
+BACKUP_SCRIPT_FILENAME="safebrew.sh"
+
+# Sanity checks
+backup_script_filepath="${script_dirpath}/${BACKUP_SCRIPT_FILENAME}"
+if ! [ -x "${backup_script_filepath}" ]; then
+    echo "Error: Backup script is not executable: ${backup_script_filepath}" >&2
+    exit 1
+fi
+if ! [ -d "${LAUNCH_AGENTS_DIRPATH}" ]; then
+    # If we don't have LaunchAgents, an assumption is wrong; don't continue
+    # because this should already exist
+    echo "Error: Couldn't find LaunchAgents diretory: ${LAUNCH_AGENTS_DIRPATH}" >&2
+    exit 1
+fi
+
+# Prompts the user to fill in the config file from 
+fill_config_file() {
+    # Use a tempfile for atomicity
+    temp_filepath="$(mktemp)"
+
+    comment_buf=()
+
+    echo "✍️ Filling out config: ${CONFIG_FILEPATH}"
+    echo ""
+    echo "💡 You can use shell syntax, e.g. \$HOME, \"quotes\", etc."
+    echo ""
+
+    # Read every line (preserve blanks) from the template
+    while IFS= read -r line || [ -n "${line}" ]; do
+        case "${line}" in
+            \#*)               # Comment (collect for later display)
+                comment_buf+=("${line}")
+                ;;
+            *[A-Za-z0-9_]=*)   # Assignment line (e.g. VAR=)
+                var_name="${line%%=*}"           # strip “=...”
+                var_name="${var_name//[[:space:]]/}"   # trim stray spaces
+
+                # show the comments that belong to this variable
+                if [ ${#comment_buf[@]} -gt 0 ]; then
+                    printf "%s\n" "${comment_buf[@]}"
+                fi
+
+                # prompt the user
+                # We need to explicitly read from /dev/tty because STDIN is already coming from EXAMPLE_CONFIG_FILEPATH
+                read -r -p "${var_name}=" value < /dev/tty
+
+                # Write comments + filled-in assignment to the output file
+                printf "%s\n" "${comment_buf[@]}"       >>"$temp_filepath"
+                printf "%s=%s\n" "$var_name" "$value" >>"$temp_filepath"
+
+                comment_buf=()   # clear buffer for next variable
+                echo ""  # Newline in prep for next variable
+                ;;
+            *)  # anything else, copy through verbatim
+                if [ "${#comment_buf[@]}" -gt 0 ]; then
+                    printf "%s\n" "${comment_buf[@]}" >>"$temp_filepath"
+                fi
+                comment_buf=()
+                printf "%s\n" "$line"             >>"$temp_filepath"
+                ;;
+        esac
+    done <"$EXAMPLE_CONFIG_FILEPATH"
+
+    cp "${temp_filepath}" "${CONFIG_FILEPATH}"
+    echo "✅ Wrote config: ${CONFIG_FILEPATH}"
 }
 
-error() {
-    echo -e "${RED}[ERROR]${NC} $1" >&2
-}
+# The user doesn't have a config file; we need to create it for them
+if ! [ -f "${CONFIG_FILEPATH}" ]; then
+    fill_config_file
+fi
 
-warn() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-# Configuration
-PLIST_SOURCE="${script_dirpath}/com.user.brewbackup.plist"
-PLIST_TARGET="${HOME}/Library/LaunchAgents/BackupHomebrew.plist"
-SCRIPT_PATH="${script_dirpath}/backup-brew.sh"
-
-
+# Create a plist file that runs our script
 plist_contents=$(cat << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.user.brewbackup</string>
+    <string>${PLIST_LABEL}</string>
     
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/odyssey/code/brew-backup/backup-brew.sh</string>
+        <string>${backup_script_filepath}</string>
     </array>
     
     <key>StartCalendarInterval</key>
@@ -48,10 +101,10 @@ plist_contents=$(cat << EOF
     </dict>
     
     <key>StandardOutPath</key>
-    <string>/tmp/brew-backup.log</string>
+    <string>/tmp/${BACKUP_SCRIPT_FILENAME}.out</string>
     
     <key>StandardErrorPath</key>
-    <string>/tmp/brew-backup.error.log</string>
+    <string>/tmp/${BACKUP_SCRIPT_FILENAME}.err</string>
     
     <key>RunAtLoad</key>
     <false/>
@@ -62,48 +115,20 @@ plist_contents=$(cat << EOF
 </plist>
 EOF
 
-
-
-
-
-# Check if plist file exists
-if [[ ! -f "${PLIST_SOURCE}" ]]; then
-    error "Plist file not found at ${PLIST_SOURCE}"
-    exit 1
-fi
-
-# Check if backup script exists and is executable
-if [[ ! -f "${SCRIPT_PATH}" ]]; then
-    error "Backup script not found at ${SCRIPT_PATH}"
-    exit 1
-fi
-
-if [[ ! -x "${SCRIPT_PATH}" ]]; then
-    log "Making backup script executable"
-    chmod +x "${SCRIPT_PATH}"
-fi
-
-# Create LaunchAgents directory if it doesn't exist
-if [[ ! -d "${HOME}/Library/LaunchAgents" ]]; then
-    log "Creating LaunchAgents directory"
-    mkdir -p "${HOME}/Library/LaunchAgents"
-fi
-
 # Unload existing service if it's running (idempotent)
-if launchctl list | grep -q "com.user.brewbackup"; then
-    log "Unloading existing service"
-    launchctl unload "${PLIST_TARGET}" 2>/dev/null || true
+if launchctl list | grep -q "${PLIST_LABEL}"; then
+    echo "Unloading existing service from launchctl..."
+    launchctl unload "${PLIST_FILEPATH}"
 fi
 
-# Update the plist file with the correct script path
-log "Updating plist file with correct script path"
-sed "s|/Users/odyssey/code/brew-backup/backup-brew.sh|${SCRIPT_PATH}|g" "${PLIST_SOURCE}" > "${PLIST_TARGET}"
+echo "${plist_contents}" > "${PLIST_FILEPATH}"
 
 # Load the service (idempotent - launchctl load will succeed even if already loaded)
-log "Loading backup service"
-launchctl load "${PLIST_TARGET}"
+launchctl load "${PLIST_FILEPATH}"
 
-log "Installation completed successfully!"
-log "The backup will run daily at 12:00 PM"
-log "You can manually run the backup with: ${SCRIPT_PATH}"
-log "To uninstall, run: launchctl unload ${PLIST_TARGET} && rm ${PLIST_TARGET}"
+echo "✅ Installation completed successfully"
+echo ""
+echo "The backup will run daily at 12:00 PM"
+echo "You can manually run the backup with: ${backup_script_filepath}"
+echo ""
+echo "💡 To uninstall, run: ${script_dirpath}"

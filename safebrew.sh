@@ -3,9 +3,13 @@
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
+source "${script_dirpath}/shared-consts.env"
 
 
-CONFIG
+if ! [ -f "${CONFIG_FILEPATH}" ]; then
+    echo "Error: No config file found at: ${CONFI_FILEPATH}" >&2
+    exit 1
+fi
 
 # Load configuration if it exists
 if [[ -f "${script_dirpath}/config" ]]; then
