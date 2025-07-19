@@ -3,6 +3,9 @@
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
+echo "I am safebrew!"
+exit 0
+
 source "${script_dirpath}/shared-consts.env"
 
 
