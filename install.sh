@@ -25,6 +25,47 @@ PLIST_SOURCE="${script_dirpath}/com.user.brewbackup.plist"
 PLIST_TARGET="${HOME}/Library/LaunchAgents/BackupHomebrew.plist"
 SCRIPT_PATH="${script_dirpath}/backup-brew.sh"
 
+
+plist_contents=$(cat << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.brewbackup</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/odyssey/code/brew-backup/backup-brew.sh</string>
+    </array>
+    
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>12</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    
+    <key>StandardOutPath</key>
+    <string>/tmp/brew-backup.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/tmp/brew-backup.error.log</string>
+    
+    <key>RunAtLoad</key>
+    <false/>
+    
+    <key>KeepAlive</key>
+    <false/>
+</dict>
+</plist>
+EOF
+
+
+
+
+
 # Check if plist file exists
 if [[ ! -f "${PLIST_SOURCE}" ]]; then
     error "Plist file not found at ${PLIST_SOURCE}"

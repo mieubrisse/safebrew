@@ -1,6 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -euo pipefail
 script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
+
+
+
+CONFIG
 
 # Load configuration if it exists
 if [[ -f "${script_dirpath}/config" ]]; then

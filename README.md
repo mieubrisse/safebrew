@@ -1,16 +1,15 @@
-# Homebrew Backup System
+safebrew
+========
+A tiny automation system for regularly doing `brew bundle dump` and pushing it to a Git repo.
 
-An automated system for backing up your Homebrew packages using `brew bundle dump` and committing them to a Git repository.
+Why this repo?
 
-## Features
+Automated brew backup is in a curious state. Everybody has the problem - I found multiple blog posts and a couple personal repos - but nobody has an off-the-shelf solution for doing it. Maybe it's considered too small to be worth the time?
 
-- Automatically generates a Brewfile with all your installed packages
-- Commits changes to a Git repository
-- Configurable backup location and Git repository
-- Scheduled execution via macOS LaunchAgent
-- Idempotent installation process
+But there were enough fiddly bits I had to figure out that I figured I'd publish my solution, so folks don't have to keep reinventing the wheel.
 
-## Quick Start
+Quick Start
+-----------
 
 1. Clone this repository:
    ```bash
@@ -29,7 +28,8 @@ An automated system for backing up your Homebrew packages using `brew bundle dum
    ./install.sh
    ```
 
-## Configuration
+Configuration
+-------------
 
 Copy `config.example` to `config` and customize:
 
@@ -38,20 +38,23 @@ Copy `config.example` to `config` and customize:
 - `BREWFILE_NAME`: Name of the generated Brewfile (default: "Brewfile")
 - `COMMIT_MESSAGE`: Commit message for backup commits
 
-## Manual Usage
+Manual Usage
+------------
 
 Run a backup manually:
 ```bash
 ./backup-brew.sh
 ```
 
-## Scheduled Backups
+Scheduled Backups
+-----------------
 
 The install script sets up a LaunchAgent that runs daily at 12:00 PM. Logs are written to:
 - `/tmp/brew-backup.log` (standard output)
 - `/tmp/brew-backup.error.log` (error output)
 
-## Uninstall
+Uninstall
+---------
 
 To remove the automated backup:
 ```bash
@@ -59,7 +62,8 @@ launchctl unload ~/Library/LaunchAgents/BackupHomebrew.plist
 rm ~/Library/LaunchAgents/BackupHomebrew.plist
 ```
 
-## Files
+Files
+-----
 
 - `backup-brew.sh`: Main backup script
 - `install.sh`: Installation script for setting up automation
