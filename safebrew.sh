@@ -5,21 +5,21 @@ script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 source "${script_dirpath}/shared-consts.env"
 
-if ! command -v "${BREW_BINPATH}" &> /dev/null; then
-    echo "Error: 'brew' is not installed" >&2
-    exit 1
-fi
-
-if ! command -v git &> /dev/null; then
-    echo "Error: 'git' is not installed" >&2
-    exit 1
-fi
-
 if ! [ -f "${CONFIG_FILEPATH}" ]; then
     echo "Error: Missing config file: ${CONFIG_FILEPATH}" >&2
     exit 1
 fi
 source "${CONFIG_FILEPATH}"   # We use 'source' so the user can include things like ${HOME}
+
+if ! command -v "${BREW_BINPATH}" &> /dev/null; then
+    echo "Error: 'brew' is not installed" >&2
+    exit 1
+fi
+
+if ! command -v "${GIT_BINPATH}" &> /dev/null; then
+    echo "Error: 'git' is not installed" >&2
+    exit 1
+fi
 
 if [ -z "${GIT_REPO_DIRPATH}" ]; then
     echo "Error: GIT_REPO_DIRPATH must be set" >&2
@@ -54,7 +54,7 @@ fi
 "${GIT_BINPATH}" reset --hard origin/HEAD
 
 echo "Dumping brew..."
-"${BREW_BINPATH}" bundle dump -f --file Brewfile
+HOMEBREW_NO_UPDATE=1 "${BREW_BINPATH}" bundle dump -f --file Brewfile
 
 echo "Adding Brewfile..."
 "${GIT_BINPATH}" add Brewfile
