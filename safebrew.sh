@@ -5,7 +5,7 @@ script_dirpath="$(cd "$(dirname "${0}")" && pwd)"
 
 source "${script_dirpath}/shared-consts.env"
 
-if ! command -v brew &> /dev/null; then
+if ! command -v "${BREW_BINPATH}" &> /dev/null; then
     echo "Error: 'brew' is not installed" >&2
     exit 1
 fi
