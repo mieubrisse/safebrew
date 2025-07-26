@@ -54,7 +54,7 @@ fi
 "${GIT_BINPATH}" reset --hard origin/HEAD
 
 echo "Dumping brew..."
-HOMEBREW_NO_UPDATE=1 "${BREW_BINPATH}" bundle dump -f --file Brewfile
+HOMEBREW_NO_AUTO_UPDATE=1 "${BREW_BINPATH}" bundle dump -f --file Brewfile
 
 echo "Adding Brewfile..."
 "${GIT_BINPATH}" add Brewfile
