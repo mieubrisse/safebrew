@@ -81,6 +81,8 @@ fill_config_file() {
 # The user doesn't have a config file; we need to create it for them
 if ! [ -f "${CONFIG_FILEPATH}" ]; then
     fill_config_file
+else
+    echo "Config file '${CONFIG_FILEPATH}' already filled"
 fi
 
 # Create a plist file that runs our script
@@ -125,12 +127,16 @@ EOF
 if launchctl list | grep -q "${PLIST_LABEL}"; then
     echo "Unloading existing service from launchctl..."
     launchctl unload "${PLIST_FILEPATH}"
+    echo "Existing service unloaded"
 fi
 
+echo "Writing plist file '${PLIST_FILEPATH}'"
 echo "${plist_contents}" > "${PLIST_FILEPATH}"
+echo "Plist file written"
 
-# Load the service (idempotent - launchctl load will succeed even if already loaded)
+echo "Loading plist file into launchctl..."
 launchctl load "${PLIST_FILEPATH}"
+echo "Plist file loaded"
 
 echo "✅ Installation completed successfully"
 echo ""
