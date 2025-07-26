@@ -12,6 +12,19 @@ But I figured there was enough complexity to build something generally usable, s
 
 Installation
 ------------
+
+### Option 1: Homebrew
+1. Install the formula:
+   ```
+   brew install safebrew.rb
+   ```
+1. Run the setup:
+   ```
+   safebrew-install
+   ```
+1. Follow the prompts to fill in the config values. You can use `$HOME`.
+
+### Option 2: Manual Installation
 1. Clone this repo somewhere:
    ```
    git clone git@github.com:mieubrisse/safebrew.git
