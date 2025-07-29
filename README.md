@@ -10,6 +10,11 @@ Maybe it's considered too small to be worth the time?
 
 But I figured there was enough complexity to build something generally usable, so here it is.
 
+Prerequisites
+-------------
+1. `git` and `brew` installed on your machine
+1. A Git repo to store your Homebrew backups, cloned somewhere on your machine (e.g. [this is mine](https://github.com/mieubrisse/personal-homebrew-backup))
+
 Installation
 ------------
 
