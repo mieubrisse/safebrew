@@ -1,0 +1,67 @@
+version: 2
+project_name: TEMPLATE_CLI_NAME
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - "386"
+      - amd64
+      - arm
+      - arm64
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: darwin
+        goarch: arm
+    main: ./
+    binary: TEMPLATE_CLI_NAME
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+brews:
+  - repository:
+      owner: TEMPLATE_USERNAME
+      name: homebrew-TEMPLATE_TAP_NAME
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    folder: Formula
+    homepage: "https://github.com/TEMPLATE_USERNAME/TEMPLATE_REPO_NAME"
+    description: "A CLI tool built with Go and Cobra"
+    license: "MIT"
+    test: |
+      system "#{bin}/TEMPLATE_CLI_NAME version"
+    install: |
+      bin.install "TEMPLATE_CLI_NAME"
